@@ -15,9 +15,10 @@ import PIL.ImageOps
 import os
 import ssl
 import time
+
 print("Imported")
 X = np.load('image.npz')
-X = X['arr_0']
+X = X['arr_0'][:, :28]
 y = pd.read_csv("labels.csv")
 y = y["labels"]
 
@@ -43,12 +44,25 @@ y_predicted = clf.predict(scaled_X_test)
 accuracy = accuracy_score(y_test, y_predicted)
 print("The accuracy of the model is :- ", accuracy)
 
-# cap = cv2.VideoCapture(0)
-# print("cam started")
-# while(True):
-#   print("Inside while loop")
+cap = cv2.VideoCapture(0)
+print("cam started")
+while(True):
+    print("Inside while loop")
+    
 #   try:
-#     ret, frame = cap.read()
+    ret, frame = cap.read()
+    im_pil = Image.open(frame)
+    image_bw = im_pil.convert('L')
+    image_bw_resized = image_bw.resize((28, 28), Image.ANTIALIAS)
+    pixel_filter = 20
+    min_pixel = np.percentile(image_bw_resized, pixel_filter)
+    image_bw_resized_inverted_scaled = np.clip(image_bw_resized-min_pixel, 0, 225)
+    max_pixel = np.max(image_bw_resized)
+    image_bw_resized_inverted_scaled
+    np.asarray(image_bw_resized_inverted_scaled)/max_pixel
+    test_sample = np.array(image_bw_resized_inverted_scaled)
+    test_pred = clf.predict(test_sample)
+    test_pred[0]
 #     print("Read Frame")
 
 #     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -88,13 +102,13 @@ print("The accuracy of the model is :- ", accuracy)
 #     print("pred done")
 
 
-#     cv2.imshow('frame', gray)
-#     print("Frame show")
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#           break
+    cv2.imshow('frame', gray)
+    print("Frame show")
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+          break
 #   except Exception as e:
 #     print(e)
 
 
-# cap.release()
-# cv2.destroyAllWindows()
+cap.release()
+cv2.destroyAllWindows()
